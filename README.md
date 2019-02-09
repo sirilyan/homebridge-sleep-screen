@@ -8,34 +8,48 @@
 
 ### MacOS
 
-Currenlty, only MacOS is supported, as I just got started with this plugin.
-
-In MacOS I use the `pmset` command to put the screen to sleep and `caffinate` to wake it up.
-Both are suported on MacOS > 10.9
+macOS 10.9 or later is supported. The plugin uses the `pmset` and `caffeinate` commands to
+sleep and wake the Mac, respectively.
 
 ### Windows 10
 
-I will try and implement Windows 10 support next.
+There is limited Windows 10 support. You can put the screen to sleep, but cannot wake it.
 
 ## Configuration
 
 ```json
     {
         "accessory": "ComputerScreen",
-        "name": "Mac Screen",
-        "osType": "mac"
+        "name": "Windows Laptop",
+        "osType": "windows"
     }
+```
 
+```json
+    {
+        "accessory": "ComputerScreen",
+        "name": "Mac Desktop",
+        "osType": "mac",
+        "hostname": "my-imac.local",
+        "username": "elad",
+        "sshKey": "/home/pi/.ssh/id_rsa"
+    }
 ```
 
 `osType` can be mac, which uses pmset and caffinate or windows, which uses a `powershell` command run from `cmd`. Default is mac.
+
+## Remote control
+
+By default, this plugin controls the computer that is running homebridge. If you want to
+remotely control a different computer, you can do so through ssh. Once you have added your
+ssh key to the remote system, set the `hostname`, `username`, and `sshKey` parameters.
+
+Remote control works only on macOS right now.
 
 ## Work in progress
 
 This is still at the very early stages.
 Use at your own risk.
-
-**Note: Currently this assumes you are running homebridge on the computer, which you want to control the screen of. I will try and make this more distributed later.**
 
 If you would like to contribute, feel free to send a PR my way.
 
