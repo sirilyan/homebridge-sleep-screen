@@ -1,4 +1,6 @@
 const exec = require('child_process').exec
+const ssh2 = require('ssh2').Client
+const fs = require('fs')
 
 module.exports = {
     mac: {
@@ -7,6 +9,33 @@ module.exports = {
         },
         turnOff: function() {
             exec("pmset displaysleepnow")
+        }
+    },
+    remoteMac: {
+        turnOn: (hostname, user, keyFile) => {
+            conn = new ssh2()
+            conn.on('ready', () => {
+                conn.exec("caffeinate -u -t 5", (err, stream) => {
+                    stream.on('close', () => { conn.end() })
+                })
+            }).connect({
+                host: hostname,
+                username: user,
+                privateKey: fs.readFileSync(keyFile)
+            })
+        },
+        turnOff: (hostname, user, keyFile) => {
+            console.log(user + "@" + hostname + ": key " + keyFile)
+            conn = new ssh2()
+            conn.on('ready', () => {
+                conn.exec("pmset displaysleepnow", (err, stream) => {
+                    stream.on('close', () => { conn.end() })
+                })
+            }).connect({
+                host: hostname,
+                username: user,
+                privateKey: fs.readFileSync(keyFile)
+            })
         }
     },
     windows: {

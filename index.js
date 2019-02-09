@@ -15,6 +15,9 @@ function ComputerScreen(log, config, api) {
     this.currentStatus = true
     this.name = config["name"]
     this.osType = config["osType"]
+    this.hostname = config["hostname"]
+    this.username = config["username"]
+    this.sshKey = config["sshKey"]
 
     this.screenService = new Service.Switch(this.name);
 
@@ -45,6 +48,9 @@ ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
             case 'windows':
                 commands = OsCommands.windows
                 break;
+            case 'remoteMac':
+                commands = OsCommands.remoteMac
+                break;
             case 'mac':
             default:
                 commands = OsCommands.mac
@@ -53,9 +59,9 @@ ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
         me.log(`Set display to ${on ? 'on' : 'off'}`)
         me.currentStatus = !me.currentStatus
         if (!me.currentStatus) {
-            commands.turnOff()
+            commands.turnOff(this.hostname, this.username, this.sshKey)
         } else {
-            commands.turnOn()
+            commands.turnOn(this.hostname, this.username, this.sshKey)
         }
         return next()
 }
