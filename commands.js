@@ -3,8 +3,8 @@ const ssh2 = require('ssh2').Client
 const fs = require('fs')
 const os = require('os')
 
-const isRemote = (hostname, user, keyFile) => {
-    return (user && keyFile && hostname != os.hostname())
+const isRemote = (hostname) => {
+    return (hostname && hostname != os.hostname())
 }
 
 module.exports = {
@@ -12,7 +12,7 @@ module.exports = {
         turnOn: (hostname, user, keyFile) => {
             const command = "caffeinate -u -t 5"
 
-            if (isRemote()) {
+            if (isRemote(hostname)) {
                 conn = new ssh2()
                 conn.on('ready', () => {
                     conn.exec(command, (err, stream) => {
@@ -30,7 +30,7 @@ module.exports = {
         turnOff: (hostname, user, keyFile) => {
             const command = "pmset displaysleepnow"
 
-            if (isRemote()) {
+            if (isRemote(hostname)) {
                 conn = new ssh2()
                 conn.on('ready', () => {
                     conn.exec(command, (err, stream) => {
