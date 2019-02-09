@@ -9,6 +9,30 @@ const isRemote = (hostname) => {
 
 module.exports = {
     mac: {
+        isOn: (hostname, user, keyFile) => {
+            const command = "pmset -g powerstate IODisplayWrangler"
+
+            if (isRemote(hostname)) {
+                let conn = new ssh2()
+                let stdout = ""
+
+                conn.on('ready', () => {
+                    conn.exec(command, (err, stream) => {
+                        stream.on('data', (data) => { stdout += data}
+                        ).on('close', () => {
+                            conn.end()
+                            return (stdout.indexOf("USABLE") != -1)
+                        })
+                    })
+                }).connect({
+                    host: hostname,
+                    username: user,
+                    privateKey: fs.readFileSync(keyFile)
+                })
+            } else {
+                exec(command);
+            }
+        },
         turnOn: (hostname, user, keyFile) => {
             const command = "caffeinate -u -t 5"
 

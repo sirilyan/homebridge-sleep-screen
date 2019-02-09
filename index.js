@@ -31,37 +31,45 @@ ComputerScreen.prototype.getServices = function getServices() {
     return [this.screenService]
 }
 
+ComputerScreen.prototype.getSwitchOnCharacteristic = function (next) {
+    const me = this
+    let commands;
+    switch (this.osType) {
+        case 'windows':
+            commands = OsCommands.windows
+            break;
+        case 'mac':
+        default:
+            commands = OsCommands.mac
+            break;
+    }
 
+    if (commands.isOn) {
+        me.currentStatus = commands.isOn()
+    }
 
-
-ComputerScreen.prototype.getSwitchOnCharacteristic = function(next) {
-        const me = this
-        me.log(`Returned current state: ${me.currentStatus}`);
-        return next(null, me.currentStatus)
+    me.log(`Returned current state: ${me.currentStatus}`);
+    return next(null, me.currentStatus)
 }
 
-
 ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
-        const me = this
-        let commands;
-        switch (this.osType) {
-            case 'windows':
-                commands = OsCommands.windows
-                break;
-            case 'remoteMac':
-                commands = OsCommands.remoteMac
-                break;
-            case 'mac':
-            default:
-                commands = OsCommands.mac
-                break;
-        }
-        me.log(`Set display to ${on ? 'on' : 'off'}`)
-        me.currentStatus = !me.currentStatus
-        if (!me.currentStatus) {
-            commands.turnOff(this.hostname, this.username, this.sshKey)
-        } else {
-            commands.turnOn(this.hostname, this.username, this.sshKey)
-        }
-        return next()
+    const me = this
+    let commands;
+    switch (this.osType) {
+        case 'windows':
+            commands = OsCommands.windows
+            break;
+        case 'mac':
+        default:
+            commands = OsCommands.mac
+            break;
+    }
+    me.log(`Set display to ${on ? 'on' : 'off'}`)
+    me.currentStatus = !me.currentStatus
+    if (!me.currentStatus) {
+        commands.turnOff(this.hostname, this.username, this.sshKey)
+    } else {
+        commands.turnOn(this.hostname, this.username, this.sshKey)
+    }
+    return next()
 }
