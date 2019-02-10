@@ -11,17 +11,17 @@ module.exports = {
     mac: {
         isOn: (hostname, user, keyFile) => {
             const command = "pmset -g powerstate IODisplayWrangler"
+            let stdout = ""
 
             if (isRemote(hostname)) {
                 let conn = new ssh2()
-                let stdout = ""
 
                 conn.on('ready', () => {
                     conn.exec(command, (err, stream) => {
-                        stream.on('data', (data) => { stdout += data}
+                        stream.on('data', (data) => { stdout += data }
                         ).on('close', () => {
                             conn.end()
-                            return (stdout.indexOf("USABLE") != -1)
+
                         })
                     })
                 }).connect({
@@ -30,8 +30,12 @@ module.exports = {
                     privateKey: fs.readFileSync(keyFile)
                 })
             } else {
-                exec(command);
+                exec(command, (err, out, code) => {
+                    stdout = out
+                })
             }
+
+            return stdout.indexOf("USEABLE") > -1
         },
         turnOn: (hostname, user, keyFile) => {
             const command = "caffeinate -u -t 5"
@@ -71,9 +75,10 @@ module.exports = {
         }
     },
     windows: {
-        turnOn: (hostname, user, keyFile) => {},
+        turnOn: (hostname, user, keyFile) => { },
         turnOff: (hostname, user, keyFile) => {
             exec("powershell (Add-Type '[DllImport(\"user32.dll\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2")
         }
     }
 }
+

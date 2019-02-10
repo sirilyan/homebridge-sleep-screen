@@ -73,3 +73,4 @@ ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
     }
     return next()
 }
+
