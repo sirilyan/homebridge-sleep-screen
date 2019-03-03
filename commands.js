@@ -1,77 +1,56 @@
-const exec = require('child_process').exec
-const ssh2 = require('ssh2').Client
-const fs = require('fs')
+"use strict"
+
+const exec = require('child-process-promise').exec
+const node_ssh = require('node-ssh')
 const os = require('os')
+
+const _isSleeping = []
 
 const isRemote = (hostname) => {
     return (hostname && hostname != os.hostname())
 }
 
+const runCommand = async (hostname, user, keyFile, command) => {
+    let r
+    if (isRemote(hostname)) {
+        r = _remoteExec(hostname, user, keyFile, command)
+    } else {
+        r = _localExec(command)
+    }
+    return r
+}
+
+const _remoteExec = async (hostname, user, keyFile, command) => {
+    let conn = new node_ssh()
+    return conn.connect({
+        host: hostname,
+        username: user,
+        privateKey: keyFile
+    }).then(() => conn.execCommand(command))
+}
+
+const _localExec = (command) => {
+    return exec(command)
+}
+
 module.exports = {
     mac: {
-        isOn: (hostname, user, keyFile) => {
+        isOn: (hostname) => !_isSleeping[hostname],
+        updateOn: async (hostname, user, keyFile) => {
             const command = "pmset -g powerstate IODisplayWrangler"
-            let stdout = ""
-
-            if (isRemote(hostname)) {
-                let conn = new ssh2()
-
-                conn.on('ready', () => {
-                    conn.exec(command, (err, stream) => {
-                        stream.on('data', (data) => { stdout += data }
-                        ).on('close', () => {
-                            conn.end()
-
-                        })
-                    })
-                }).connect({
-                    host: hostname,
-                    username: user,
-                    privateKey: fs.readFileSync(keyFile)
-                })
-            } else {
-                exec(command, (err, out, code) => {
-                    stdout = out
-                })
-            }
-
-            return stdout.indexOf("USEABLE") > -1
+            let result = await runCommand(hostname, user, keyFile, command)
+            _isSleeping[hostname] = result.stdout.indexOf("USEABLE") == -1
+            console.log(_isSleeping)
         },
         turnOn: (hostname, user, keyFile) => {
             const command = "caffeinate -u -t 5"
-
-            if (isRemote(hostname)) {
-                conn = new ssh2()
-                conn.on('ready', () => {
-                    conn.exec(command, (err, stream) => {
-                        stream.on('close', () => { conn.end() })
-                    })
-                }).connect({
-                    host: hostname,
-                    username: user,
-                    privateKey: fs.readFileSync(keyFile)
-                })
-            } else {
-                exec(command);
-            }
+            runCommand(hostname, user, keyFile, command)
+            .then(() => _isSleeping[hostname] = false)
         },
         turnOff: (hostname, user, keyFile) => {
             const command = "pmset displaysleepnow"
-
-            if (isRemote(hostname)) {
-                conn = new ssh2()
-                conn.on('ready', () => {
-                    conn.exec(command, (err, stream) => {
-                        stream.on('close', () => { conn.end() })
-                    })
-                }).connect({
-                    host: hostname,
-                    username: user,
-                    privateKey: fs.readFileSync(keyFile)
-                })
-            } else {
-                exec(command);
-            }
+            runCommand(hostname, user, keyFile, command)
+            .then(() => _isSleeping[hostname] = true)
         }
     },
     windows: {

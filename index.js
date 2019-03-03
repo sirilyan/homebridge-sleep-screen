@@ -12,7 +12,6 @@ module.exports = function (homebridge) {
 
 function ComputerScreen(log, config, api) {
     this.log = log;
-    this.currentStatus = true
     this.name = config["name"]
     this.osType = config["osType"]
     this.hostname = config["hostname"]
@@ -31,8 +30,7 @@ ComputerScreen.prototype.getServices = function getServices() {
     return [this.screenService]
 }
 
-ComputerScreen.prototype.getSwitchOnCharacteristic = function (next) {
-    const me = this
+ComputerScreen.prototype.getSwitchOnCharacteristic = async function (next) {
     let commands;
     switch (this.osType) {
         case 'windows':
@@ -44,12 +42,8 @@ ComputerScreen.prototype.getSwitchOnCharacteristic = function (next) {
             break;
     }
 
-    if (commands.isOn) {
-        me.currentStatus = commands.isOn()
-    }
-
-    me.log(`Returned current state: ${me.currentStatus}`);
-    return next(null, me.currentStatus)
+    await commands.updateOn(this.hostname, this.username, this.sshKey)
+    next(null, commands.isOn(this.hostname))
 }
 
 ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
@@ -64,13 +58,15 @@ ComputerScreen.prototype.setSwitchOnCharacteristic = function (on, next) {
             commands = OsCommands.mac
             break;
     }
-    me.log(`Set display to ${on ? 'on' : 'off'}`)
-    me.currentStatus = !me.currentStatus
-    if (!me.currentStatus) {
+
+    if (commands.isOn(this.hostname)) {
+        me.log(`Set display off`)
         commands.turnOff(this.hostname, this.username, this.sshKey)
     } else {
+        me.log(`Set display on`)
         commands.turnOn(this.hostname, this.username, this.sshKey)
     }
     return next()
 }
+
 
