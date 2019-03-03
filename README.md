@@ -14,13 +14,14 @@ sleep and wake the Mac, respectively.
 ### Windows 10
 
 There is limited Windows 10 support. You can put the screen to sleep, but cannot wake it.
+The plugin uses PowerShell to perform these actions.
 
 ## Configuration
 
 ```json
     {
         "accessory": "ComputerScreen",
-        "name": "Windows Laptop",
+        "name": "Windows Laptop (local)",
         "osType": "windows"
     }
 ```
@@ -28,15 +29,15 @@ There is limited Windows 10 support. You can put the screen to sleep, but cannot
 ```json
     {
         "accessory": "ComputerScreen",
-        "name": "Mac Desktop",
+        "name": "Mac Desktop (remote)",
         "osType": "mac",
         "hostname": "my-imac.local",
         "username": "elad",
-        "sshKey": "/home/pi/.ssh/id_rsa"
+        "sshKey": "/home/elad/.ssh/id_rsa"
     }
 ```
 
-`osType` can be mac, which uses pmset and caffinate or windows, which uses a `powershell` command run from `cmd`. Default is mac.
+`osType` can be mac or windows. The default is mac.
 
 ## Remote control
 
@@ -46,11 +47,8 @@ ssh key to the remote system, set the `hostname`, `username`, and `sshKey` param
 
 Remote control works only on macOS right now.
 
-## Work in progress
+## TODO
 
-This is still at the very early stages.
-Use at your own risk.
+It is not possible to turn on the screen of a Windows 10 system.
 
-If you would like to contribute, feel free to send a PR my way.
-
-Enjoy!
+Linux support.

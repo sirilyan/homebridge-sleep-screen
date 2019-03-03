@@ -11,6 +11,7 @@ class ComputerScreen {
     this.hostname = config.hostname;
     this.username = config.username;
     this.sshKey = config.sshKey;
+    this.awake = false;
 
     this.screenService = new Service.Switch(this.name);
 
@@ -36,8 +37,8 @@ class ComputerScreen {
         break;
     }
 
-    await commands.updateOn(this.hostname, this.username, this.sshKey);
-    next(null, commands.isOn(this.hostname));
+    await commands.updateOn(this);
+    next(null, commands.isOn(this));
   }
 
   setSwitchOnCharacteristic(on, next) {
@@ -53,12 +54,12 @@ class ComputerScreen {
         break;
     }
 
-    if (commands.isOn(this.hostname)) {
+    if (commands.isOn(this)) {
       me.log('Set display off');
-      commands.turnOff(this.hostname, this.username, this.sshKey);
+      commands.turnOff(this);
     } else {
       me.log('Set display on');
-      commands.turnOn(this.hostname, this.username, this.sshKey);
+      commands.turnOn(this);
     }
     return next();
   }
