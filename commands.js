@@ -1,3 +1,4 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
 const os = require('os');
 const NodeSsh = require('node-ssh');
 const cpp = require('child-process-promise');
@@ -48,11 +49,26 @@ module.exports = {
       device.awake = await runCommand(device, command)
         .then(() => false);
     },
+    getBrightness: async (device) => {
+      const command = '/usr/local/bin/brightness -l';
+      const originalBrightness = device.brightness;
+
+      device.brightness = await runCommand(device, command)
+        .then(result => Math.int(100 * result.stdout.match(/brightness ([01].\d+)/m)[1]))
+        .catch(() => originalBrightness);
+      return device.brightness;
+    },
+    setBrightness: async (device, newBrightness) => {
+      const command = `/usr/local/bin/brightness -v ${newBrightness / 100}`;
+      await runCommand(device, command)
+        .then(() => newBrightness);
+    },
   },
   windows: {
     isOn: device => device.awake,
+    updateOn: async () => true,
     turnOn: async (device) => {
-      const command = 'echo hi';
+      const command = 'echo hi'; // TODO: this does not actually wake anything, of course
       device.awake = await runCommand(device, command)
         .then(() => false);
     },
@@ -61,5 +77,7 @@ module.exports = {
       device.awake = await runCommand(device, command)
         .then(() => true);
     },
+    getBrightness: async () => 100,
+    setBrightness: async () => 100,
   },
 };

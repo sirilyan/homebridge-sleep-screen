@@ -9,11 +9,14 @@
 ### MacOS
 
 macOS 10.9 or later is supported. The plugin uses the `pmset` and `caffeinate` commands to
-sleep and wake the Mac, respectively.
+sleep and wake the Mac, respectively. You must also install Nicholas Riley's
+[`brightness`](https://github.com/nriley/brightness) package to manage screen brightness.
 
 ### Windows 10
 
 There is limited Windows 10 support. You can put the screen to sleep, but cannot wake it.
+You are also unable to change the display brightness.
+
 The plugin uses PowerShell to perform these actions.
 
 ## Configuration
@@ -49,6 +52,15 @@ Remote control works only on macOS right now.
 
 ## TODO
 
-It is not possible to turn on the screen of a Windows 10 system.
+### Mac
 
-Linux support.
+Altering the brightness of secondary displays may not work.
+
+### Windows
+
+It is not possible to wake a Windows system, nor to adjust the brightness.
+Remote control has not been implemented.
+
+### Linux/BSD
+
+No support yet.
